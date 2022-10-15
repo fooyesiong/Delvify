@@ -1,3 +1,5 @@
+from asyncio import tasks
+from asyncio.windows_events import NULL
 import json
 from unicodedata import name
 from django.contrib.auth import authenticate, login, logout
@@ -24,7 +26,7 @@ def index(request):
 
 @csrf_exempt
 @login_required
-def create(request):
+def create_list(request):
 
     # Composing a new list must be via POST
     if request.method != "POST":
@@ -40,12 +42,33 @@ def create(request):
 
     return JsonResponse({"message": "List sent successfully."}, status=201)
 
+@csrf_exempt
+@login_required
+def create_task(request):
+
+    # Composing a new task must be via POST
+    if request.method != "POST":
+        return JsonResponse({"error": "POST request required."}, status=400)
+
+    data = json.loads(request.body)
+    name = data.get("name", "")
+    description = data.get("description", "")
+    deadline = data.get("deadline", "")
+    # Create one task
+    task = Task(
+            name=name,
+            description=description,
+            deadline=deadline,
+        )
+    task.save()
+    
+    return JsonResponse({"message": "Task sent successfully."}, status=201)
 
 @login_required
 def view(request, view):
 
     # Filter lists returned based on view
-    if view == "list":
+    if view == "lists":
         lists = List.objects.filter(
             deleted=False
         )
@@ -59,15 +82,33 @@ def view(request, view):
     # Return lists in reverse chronologial order
     lists = lists.order_by("-timestamp").all()
     return JsonResponse([list.serialize() for list in lists], safe=False)
+    
+@login_required
+def view1(request, view1):
 
+    # Filter tasks returned based on view
+    if view1 == "tasks":
+        tasks = Task.objects.filter(
+            deleted=False
+        )
+    elif view1 == "task_deleted":
+        tasks = Task.objects.filter(
+            deleted=True
+        )
+    else:
+        return JsonResponse({"error": "Invalid view."}, status=400)
 
+    # Return tasks in reverse chronologial order
+    tasks = tasks.order_by("-timestamp").all()
+    return JsonResponse([task.serialize() for task in tasks], safe=False)
+    
 @csrf_exempt
 @login_required
 def list(request, list_id):
 
     # Query for requested list
     try:
-        list = List.objects.get(name=request.body, pk=list_id)
+        list = List.objects.get(pk=list_id)
     except List.DoesNotExist:
         return JsonResponse({"error": "List not found."}, status=404)
 
@@ -97,7 +138,7 @@ def task(request, task_id):
 
     # Query for requested list
     try:
-        task = Task.objects.get(name=request.body, pk=task_id)
+        task = Task.objects.get(pk=task_id)
     except Task.DoesNotExist:
         return JsonResponse({"error": "Task not found."}, status=404)
 

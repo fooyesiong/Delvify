@@ -5,24 +5,37 @@
     <h2>{{ request.user.email }}</h2>
 
     <button class="btn btn-sm btn-outline-primary" id="list">Board</button>
-    <button class="btn btn-sm btn-outline-primary" id="create">Create</button>
+    <button class="btn btn-sm btn-outline-primary" id="create_list">Create List</button>
     <button class="btn btn-sm btn-outline-primary" id="deleted">Deleted</button>
     <a class="btn btn-sm btn-outline-primary" href="{% url 'logout' %}">Log Out</a>
     <hr>
 
     <div id="lists-view">
-        this is lists-view
     </div>
     
+    <div id="tasks-view">
+    </div>
+
     <div id="task-view">
-        this is task-view
+    </div>
+
+    <div id="create-task-view">
+        <h3>New task</h3>
+        <form id="create-task">
+            <div class="form-group">
+                Name: <input id="create-taskname" class="form-control">
+                Description: <input id="create-description" class="form-control">
+                Deadline: <input id="create-deadline" class="form-control">
+            </div>
+            <input type="submit" class="btn btn-primary"/>
+        </form>
     </div>
 
     <div id="create-view">
         <h3>New List</h3>
-        <form id="create-form">
+        <form id="create-list">
             <div class="form-group">
-                Name: <input id="create-name" class="form-control">
+                Name: <input class="form-control" id="create-listname" class="form-control"placeholder="Name">
             </div>
             <input type="submit" class="btn btn-primary"/>
         </form>
