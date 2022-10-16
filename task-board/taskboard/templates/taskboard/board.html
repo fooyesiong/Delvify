@@ -6,7 +6,6 @@
 
     <button class="btn btn-sm btn-outline-primary" id="list">Board</button>
     <button class="btn btn-sm btn-outline-primary" id="create_list">Create List</button>
-    <button class="btn btn-sm btn-outline-primary" id="deleted">Deleted</button>
     <a class="btn btn-sm btn-outline-primary" href="{% url 'logout' %}">Log Out</a>
     <hr>
 
@@ -16,13 +15,25 @@
     <div id="tasks-view">
     </div>
 
-    <div id="task-view">
+    <div id="update-view">
+        <h3>Update task</h3>
+        <form id="update-task">
+            <div class="form-group">
+                List Number: <input disabled class="form-control" id="list_id" value="">
+                Task Number: <input disabled class="form-control" id="task_id" value="">
+                Name: <input id="update-taskname" class="form-control">
+                Description: <input id="update-description" class="form-control">
+                Deadline: <input id="update-deadline" class="form-control">
+            </div>
+            <input type="submit" class="btn btn-primary"/>
+        </form>
     </div>
 
     <div id="create-task-view">
         <h3>New task</h3>
         <form id="create-task">
             <div class="form-group">
+                List Number: <input disabled class="form-control" id="list_id_1" value="">
                 Name: <input id="create-taskname" class="form-control">
                 Description: <input id="create-description" class="form-control">
                 Deadline: <input id="create-deadline" class="form-control">

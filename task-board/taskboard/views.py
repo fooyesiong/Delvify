@@ -54,11 +54,13 @@ def create_task(request):
     name = data.get("name", "")
     description = data.get("description", "")
     deadline = data.get("deadline", "")
+    list_id = data.get("list_id", "")
     # Create one task
     task = Task(
             name=name,
             description=description,
             deadline=deadline,
+            list_id=list_id,
         )
     task.save()
     
@@ -72,15 +74,11 @@ def view(request, view):
         lists = List.objects.filter(
             deleted=False
         )
-    elif view == "deleted":
-        lists = List.objects.filter(
-            deleted=True
-        )
     else:
         return JsonResponse({"error": "Invalid view."}, status=400)
 
-    # Return lists in reverse chronologial order
-    lists = lists.order_by("-timestamp").all()
+    # Return lists in chronologial order
+    lists = lists.order_by("timestamp").all()
     return JsonResponse([list.serialize() for list in lists], safe=False)
     
 @login_required
@@ -91,15 +89,11 @@ def view1(request, view1):
         tasks = Task.objects.filter(
             deleted=False
         )
-    elif view1 == "task_deleted":
-        tasks = Task.objects.filter(
-            deleted=True
-        )
     else:
         return JsonResponse({"error": "Invalid view."}, status=400)
 
     # Return tasks in reverse chronologial order
-    tasks = tasks.order_by("-timestamp").all()
+    tasks = tasks.order_by("timestamp").all()
     return JsonResponse([task.serialize() for task in tasks], safe=False)
     
 @csrf_exempt
@@ -134,28 +128,89 @@ def list(request, list_id):
 
 @csrf_exempt
 @login_required
-def task(request, task_id):
-
-    # Query for requested list
+def tasks(request, tasks_id):
+    
+    # Query for requested tasks
     try:
-        task = Task.objects.get(pk=task_id)
+        task = Task.objects.filter(list_id=tasks_id, deleted=False, selected=False)
     except Task.DoesNotExist:
         return JsonResponse({"error": "Task not found."}, status=404)
 
-    # Return list contents
+    # Return tasks 
     if request.method == "GET":
-        return JsonResponse(task.serialize())
+        return JsonResponse([task.serialize() for task in task], safe=False)
         print(task)
 
-    # Update whether list is deleted
     elif request.method == "PUT":
         data = json.loads(request.body)
         if data.get("deleted") is not None:
             task.deleted = data["deleted"]
+        elif data.get("list_id") is not None:
+            task.list_id = data["list_id"]
+        task.update()
+        return HttpResponse(status=204)
+
+    # Task must be via GET or PUT
+    else:
+        return JsonResponse({
+            "error": "GET or PUT request required."
+        }, status=400)
+
+@csrf_exempt
+@login_required
+def task(request, task_id):
+    
+    # Query for requested tasks
+    try:
+        task = Task.objects.get(pk=task_id, deleted=False)
+    except Task.DoesNotExist:
+        return JsonResponse({"error": "Task not found."}, status=404)
+
+    # Return tasks 
+    if request.method == "GET":
+        return JsonResponse([task.serialize() for task in task], safe=False)
+        print(task)
+
+    elif request.method == "PUT":
+        data = json.loads(request.body)
+        if data.get("deleted") is not None:
+            task.deleted = data["deleted"]
+
+        elif data.get("name") is not None:
+            task.name = data["name"]
+
+        elif data.get("description") is not None:
+            task.description = data["description"]
+
+        elif data.get("deadline") is not None:
+            task.deadline = data["deadline"]
         task.save()
         return HttpResponse(status=204)
 
-    # List must be via GET or PUT
+    # Task must be via GET or PUT
+    else:
+        return JsonResponse({
+            "error": "GET or PUT request required."
+        }, status=400)
+
+@csrf_exempt
+@login_required
+def task_selected(request, task_id):
+    
+    # Query for requested tasks
+    try:
+        task = Task.objects.get(pk=task_id, deleted=False)
+    except Task.DoesNotExist:
+        return JsonResponse({"error": "Task not found."}, status=404)
+
+    if request.method == "PUT":
+        data = json.loads(request.body)
+        if data.get("selected") is not None:
+            task.selected = data["selected"]
+        task.save()
+        return HttpResponse(status=204)
+
+    # Task must be via GET or PUT
     else:
         return JsonResponse({
             "error": "GET or PUT request required."
