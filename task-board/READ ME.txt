@@ -1,0 +1,1 @@
+Start Django’s built-in web server: $ python manage.py runserver
