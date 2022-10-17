@@ -173,17 +173,13 @@ def task(request, task_id):
 
     elif request.method == "PUT":
         data = json.loads(request.body)
+        task.name = data["name"]
+        task.description = data["description"]
+        task.deadline = data["deadline"]
+
         if data.get("deleted") is not None:
             task.deleted = data["deleted"]
 
-        elif data.get("name") is not None:
-            task.name = data["name"]
-
-        elif data.get("description") is not None:
-            task.description = data["description"]
-
-        elif data.get("deadline") is not None:
-            task.deadline = data["deadline"]
         task.save()
         return HttpResponse(status=204)
 
